@@ -73,6 +73,14 @@ task androidSourcesJar(type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.java.srcDirs
 }
+task makeJar(type: Copy) {
+    delete 'build/outputs/network.jar'
+    from('build/intermediates/packaged-classes/release/') //jar文件来源
+    into('build/libs/') //生成路径
+    include('classes.jar')
+    rename('classes.jar', 'eosiojavaandroidabieosserializationprovider.jar') //命名为network.jar
+}
+makeJar.dependsOn(build)
 
 project.afterEvaluate {
     publishing {
@@ -146,13 +154,13 @@ project.afterEvaluate {
 
 //Remove artifactory{} block if you are not using Artifactory
 artifactory {
-    contextUrl = artifactory_contextURL
+    contextUrl = "http://repo1.maven.org/maven2"
     publish {
         repository {
-            repoKey = artifactory_repo
+//            repoKey = artifactory_repo
 
-            username = artifactory_username
-            password = artifactory_password
+//            username = artifactory_username
+//            password = artifactory_password
         }
         defaults {
             publications('maven')
