@@ -156,12 +156,7 @@ project.afterEvaluate {
 artifactory {
     contextUrl = "http://repo1.maven.org/maven2"
     publish {
-        repository {
-//            repoKey = artifactory_repo
 
-//            username = artifactory_username
-//            password = artifactory_password
-        }
         defaults {
             publications('maven')
             publishArtifacts = true
