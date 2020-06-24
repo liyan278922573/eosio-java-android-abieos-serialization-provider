@@ -272,7 +272,10 @@ ABIEOS_NODISCARD inline bool string_to_public_key(public_key& dest, std::string&
         return string_to_key(dest, error, s.substr(7), key_type::k1, "K1");
     } else if (s.size() >= 7 && s.substr(0, 7) == "PUB_R1_") {
         return string_to_key(dest, error, s.substr(7), key_type::r1, "R1");
-    } else {
+    }
+     else if (s.substr(0, 4) == "BACC") {
+             return string_to_key(dest, error, s.substr(4), key_type::k1, "K1");
+         }else {
         return set_error(error, "unrecognized public key format");
     }
 }
