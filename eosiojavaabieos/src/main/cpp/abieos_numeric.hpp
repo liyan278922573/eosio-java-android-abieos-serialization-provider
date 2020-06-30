@@ -253,32 +253,45 @@ ABIEOS_NODISCARD bool key_to_string(std::string& dest, std::string& error, const
     return true;
 }
 
-ABIEOS_NODISCARD inline bool string_to_public_key(public_key& dest, std::string& error, std::string_view s) {
-    if (s.size() >= 3 && s.substr(0, 3) == "EOS") {
-        std::array<uint8_t, 37> whole;
-        if (!base58_to_binary(whole, error, s.substr(3)))
-            return false;
-        public_key key{key_type::k1};
-        static_assert(whole.size() == key.data.size() + 4);
-        memcpy(key.data.data(), whole.data(), key.data.size());
-        std::array<unsigned char, 20> ripe_digest;
-        if (!digest_message_ripemd160(ripe_digest, error, key.data.data(), key.data.size()))
-            return false;
-        if (memcmp(ripe_digest.data(), whole.data() + key.data.size(), 4))
-            return set_error(error, "Key checksum doesn't match");
-        dest = key;
-        return true;
-    } else if (s.size() >= 7 && s.substr(0, 7) == "PUB_K1_") {
-        return string_to_key(dest, error, s.substr(7), key_type::k1, "K1");
-    } else if (s.size() >= 7 && s.substr(0, 7) == "PUB_R1_") {
-        return string_to_key(dest, error, s.substr(7), key_type::r1, "R1");
+    ABIEOS_NODISCARD inline bool string_to_public_key(public_key& dest, std::string& error, std::string_view s) {
+        if (s.size() >= 3 && s.substr(0, 3) == "EOS") {
+            std::array<uint8_t, 37> whole;  //37 = EOS 3 + pubkey 33 + 1
+            if (!base58_to_binary(whole, error, s.substr(3)))
+                return false;
+            public_key key{key_type::k1};
+            static_assert(whole.size() == key.data.size() + 4);
+            memcpy(key.data.data(), whole.data(), key.data.size());
+            std::array<unsigned char, 20> ripe_digest;
+            if (!digest_message_ripemd160(ripe_digest, error, key.data.data(), key.data.size()))
+                return false;
+            if (memcmp(ripe_digest.data(), whole.data() + key.data.size(), 4))
+                return set_error(error, "Key checksum doesn't match");
+            dest = key;
+            return true;
+        }
+        else if (s.size() >= 4 && s.substr(0, 4) == "BACC") {
+            std::array<uint8_t, 38> whole;  //public key 33 , BACC 4 , +1
+            if (!base58_to_binary(whole, error, s.substr(4)))
+                return false;
+            public_key key{key_type::k1};
+            static_assert(whole.size() == key.data.size() + 4);
+            memcpy(key.data.data(), whole.data(), key.data.size());
+            std::array<unsigned char, 20> ripe_digest;
+            if (!digest_message_ripemd160(ripe_digest, error, key.data.data(), key.data.size()))
+                return false;
+            if (memcmp(ripe_digest.data(), whole.data() + key.data.size(), 4))
+                return set_error(error, "Key checksum doesn't match");
+            dest = key;
+            return true;
+        } else if (s.size() >= 7 && s.substr(0, 7) == "PUB_K1_") {
+            return string_to_key(dest, error, s.substr(7), key_type::k1, "K1");
+        } else if (s.size() >= 7 && s.substr(0, 7) == "PUB_R1_") {
+            return string_to_key(dest, error, s.substr(7), key_type::r1, "R1");
+        }
+        else {
+            return set_error(error, "unrecognized public key format");
+        }
     }
-     else if (s.substr(0, 4) == "BACC") {
-             return string_to_key(dest, error, s.substr(4), key_type::k1, "K1");
-         }else {
-        return set_error(error, "unrecognized public key format");
-    }
-}
 
 ABIEOS_NODISCARD inline bool public_key_to_string(std::string& dest, std::string& error, const public_key& key) {
     if (key.type == key_type::k1) {
