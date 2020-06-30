@@ -274,7 +274,7 @@ ABIEOS_NODISCARD bool key_to_string(std::string& dest, std::string& error, const
             if (!base58_to_binary(whole, error, s.substr(4)))
                 return false;
             public_key key{key_type::k1};
-            static_assert(whole.size() == key.data.size() + 4);
+//            static_assert(whole.size() == key.data.size() + 4);
             memcpy(key.data.data(), whole.data(), key.data.size());
             std::array<unsigned char, 20> ripe_digest;
             if (!digest_message_ripemd160(ripe_digest, error, key.data.data(), key.data.size()))
